@@ -10,6 +10,10 @@ var HelloCmd = &cobra.Command{
 	Use:   "hello",
 	Short: "Hello from my CLI",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Hello from shared CLI!")
+		fmt.Println("Hello from my CLI!")
 	},
+}
+
+func init() {
+	Register(HelloCmd)
 }
