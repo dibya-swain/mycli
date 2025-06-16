@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	commoncmd "github.com/dibya-swain/commoncli/cmd"
 	"github.com/spf13/cobra"
 )
@@ -11,14 +13,31 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
+	// Default: commoncli commands override mycli on conflict
+	// If COMMAND_OVERRIDE=mycli, then mycli commands override commoncli
+	override := os.Getenv("COMMAND_OVERRIDE") // "mycli" or "commoncli"
 
-	_ = commoncmd.RegisteredCommands
+	cmdMap := make(map[string]*cobra.Command)
 
-	for _, cmd := range RegisteredCommands {
-		RootCmd.AddCommand(cmd)
+	if override == "mycli" {
+		// mycli overrides commoncli
+		for _, cmd := range commoncmd.RegisteredCommands {
+			cmdMap[cmd.Use] = cmd
+		}
+		for _, cmd := range RegisteredCommands {
+			cmdMap[cmd.Use] = cmd
+		}
+	} else {
+		// Default: commoncli overrides mycli
+		for _, cmd := range RegisteredCommands {
+			cmdMap[cmd.Use] = cmd
+		}
+		for _, cmd := range commoncmd.RegisteredCommands {
+			cmdMap[cmd.Use] = cmd
+		}
 	}
 
-	for _, cmd := range commoncmd.RegisteredCommands {
+	for _, cmd := range cmdMap {
 		RootCmd.AddCommand(cmd)
 	}
 }
